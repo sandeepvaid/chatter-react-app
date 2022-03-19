@@ -1,36 +1,30 @@
-import { useEffect , useState } from "react";
-import {getPosts} from '../api';
-import { Home } from '../pages';
-import {Loader} from './';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useAuth } from "../hooks";
+import { Home, Login, Signup } from "../pages";
+import { Loader, Navbar } from "./";
 
+const Page404 = () => {
+  return <h1>404 Oops1!!</h1>;
+};
 
 function App() {
+  const auth = useAuth();
 
-  const [posts , setPosts] = useState([]);
-  const [loader,setLoading] = useState(true);
-
-  useEffect(()=>{
-
-    const fetchPosts = async ()=>{
-      const response = await getPosts();
-
-      if(response.success){
-        setPosts(response.data.posts);
-        setLoading(false);
-      }
-
-      console.log("response" , response);
-    }
-    fetchPosts();
-  },[]);
-
-if(loader){
-  return <Loader/>;
-}
+  if (auth.loading) {
+    return <Loader />;
+  }
 
   return (
     <div className="App">
-      <Home posts={posts}/>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Signup />} />
+          <Route path="*" element={<Page404 />} />
+        </Routes>
+      </Router>
     </div>
   );
 }
