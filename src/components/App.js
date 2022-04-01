@@ -1,36 +1,59 @@
-import { useEffect , useState } from "react";
-import {getPosts} from '../api';
-import { Home } from '../pages';
-import {Loader} from './';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { useAuth } from "../hooks";
+import { Home, Login, Signup, Settings, UserProfile } from "../pages";
+import { Loader, Navbar } from "./";
 
+function PrivateRoute({ children }) {
+  const auth = useAuth();
+  return auth.user ? children : <Navigate to="/login" />;
+}
+
+const Page404 = () => {
+  return <h1>404 Oops1!!</h1>;
+};
 
 function App() {
+  const auth = useAuth();
 
-  const [posts , setPosts] = useState([]);
-  const [loader,setLoading] = useState(true);
-
-  useEffect(()=>{
-
-    const fetchPosts = async ()=>{
-      const response = await getPosts();
-
-      if(response.success){
-        setPosts(response.data.posts);
-        setLoading(false);
-      }
-
-      console.log("response" , response);
-    }
-    fetchPosts();
-  },[]);
-
-if(loader){
-  return <Loader/>;
-}
+  if (auth.loading) {
+    return <Loader />;
+  }
 
   return (
     <div className="App">
-      <Home posts={posts}/>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Signup />} />
+          <Route
+            exact
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <Settings />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            exact
+            path="/user/:userId"
+            element={
+              <PrivateRoute>
+                <UserProfile />
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<Page404 />} />
+        </Routes>
+      </Router>
     </div>
   );
 }
