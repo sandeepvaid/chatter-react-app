@@ -19,8 +19,6 @@ const Home = () => {
         setPosts(response.data.posts);
         setLoading(false);
       }
-
-      console.log("response", response);
     };
     fetchPosts();
   }, []);
@@ -88,9 +86,5 @@ const Home = () => {
     </div>
   );
 };
-
-// Home.propTypes = {
-//   posts: PropTypes.array.isRequired,
-// };
 
 export default Home;
