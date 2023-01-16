@@ -1,10 +1,28 @@
 import styles from '../styles/home.module.css';
 import PropTypes from 'prop-types';
+import { format, parse } from "date-fns";
+import {Comment} from '../components/index';
+import {useEffect, useState } from 'react';
+import { getPosts } from "../api";
+import { Link } from 'react-router-dom';
+const Home = () => {
+    const [posts,setPosts] = useState([]);
+    // const 
+    useEffect(() => {
+      const fetchPosts = async () => {
+        const response = await getPosts();
+        if (response.success) {
+          setPosts(response.data.posts);
+         
+        }
+       
+      };
+      fetchPosts();
+    }, []);
 
-const Home = ({posts}) => {
   return (
     <div className={styles.postsList}>
-      {posts.map(post => 
+      {posts.map((post) => (
         <div className={styles.postWrapper} key={`post-${post._id}`}>
           <div className={styles.postHeader}>
             <div className={styles.postAvatar}>
@@ -13,8 +31,15 @@ const Home = ({posts}) => {
                 alt="user-pic"
               />
               <div>
-                <span className={styles.postAuthor}>{post.user.name}</span>
-                <span className={styles.postTime}>a minute ago</span>
+                <Link
+                  to={`/user/${post.user._id}`}
+                  className={styles.postAuthor}
+                >
+                  {post.user.name}
+                </Link>
+                <span className={styles.postTime}>
+                  {format(new Date(post.createdAt), "MM/dd/yyyy")}
+                </span>
               </div>
             </div>
             <div className={styles.postContent}>{post.content}</div>
@@ -30,7 +55,7 @@ const Home = ({posts}) => {
 
               <div className={styles.postCommentsIcon}>
                 <img
-                  src="https://cdn-icons.flaticon.com/png/512/2040/premium/2040474.png?token=exp=1647140514~hmac=f6f65a42b0479b9ad640264a8d408f49"
+                  src="https://cdn-icons-png.flaticon.com/512/1450/1450338.png"
                   alt="comments-icon"
                 />
                 <span></span>
@@ -41,26 +66,20 @@ const Home = ({posts}) => {
             </div>
 
             <div className={styles.postCommentsList}>
-              <div className={styles.postCommentsItem}>
-                <div className={styles.postCommentHeader}>
-                  <span className={styles.postCommentAuthor}>Bill</span>
-                  <span className={styles.postCommentTime}>a minute ago</span>
-                  <span className={styles.postCommentLikes}>22</span>
-                </div>
-
-                <div className={styles.postCommentContent}>Random comment</div>
-              </div>
+              {post.comments.map((comment) => {
+                return <Comment key={comment._id} comment={comment} />;
+              })}
             </div>
           </div>
-      </div>
-    )}
-      
+        </div>
+      ))}
     </div>
   );
 };
 
-Home.propTypes = {
-  posts:PropTypes.array.isRequired,
-} 
+//THis is  nothing but a type checkign we are doing means now our post is an array but if some send posts props as string then our component crashes . To avoid this we use propsType or we can use type script language to check the type. Flow is another option to do type checking.
+// Home.propTypes = {
+//   posts:PropTypes.array.isRequired,
+// } 
 
 export default Home;
