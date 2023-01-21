@@ -98,3 +98,29 @@ export const removeFriendship=(userId)=>{
     method:"POST"
   });
 }
+
+export const addPost = (content) => {
+  return customFetch(API_URLS.createPost(), {
+    method: "POST",
+    body: { content },
+  });
+};
+
+export const addComment = (postId, content) => {
+  return customFetch(API_URLS.comment(), {
+    method: "POST",
+    body: { post_id: postId, content },
+  });
+};
+
+export const addLike = (likeType, likeId) => {
+  return customFetch(API_URLS.toggleLike(likeId, likeType), {
+    method: "POST",
+  });
+};
+
+export const getLikes = (likeType, likeId) => {
+  return customFetch(API_URLS.getLikes(likeId, likeType), {
+    method: "GET",
+  });
+};

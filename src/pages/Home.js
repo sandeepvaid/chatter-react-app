@@ -1,78 +1,25 @@
 import styles from '../styles/home.module.css';
-import PropTypes from 'prop-types';
-import { format, parse } from "date-fns";
-import {Comment} from '../components/index';
-import {useEffect, useState } from 'react';
-import { getPosts } from "../api";
-import { Link } from 'react-router-dom';
+import { Post, FriendsList, CreatePost, Loader } from "../components/index";
+import { useAuth, usePost } from "../hooks";
+import { useToasts } from "react-toast-notifications";
 const Home = () => {
-    const [posts,setPosts] = useState([]);
-    // const 
-    useEffect(() => {
-      const fetchPosts = async () => {
-        const response = await getPosts();
-        if (response.success) {
-          setPosts(response.data.posts);
-         
-        }
-       
-      };
-      fetchPosts();
-    }, []);
+  const auth = useAuth();
+  const posts = usePost();
+  const { addToast } = useToasts();
+  if (posts.loading) {
+    return <Loader />;
+  }
 
   return (
-    <div className={styles.postsList}>
-      {posts.map((post) => (
-        <div className={styles.postWrapper} key={`post-${post._id}`}>
-          <div className={styles.postHeader}>
-            <div className={styles.postAvatar}>
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                alt="user-pic"
-              />
-              <div>
-                <Link
-                  to={`/user/${post.user._id}`}
-                  className={styles.postAuthor}
-                >
-                  {post.user.name}
-                </Link>
-                <span className={styles.postTime}>
-                  {format(new Date(post.createdAt), "MM/dd/yyyy")}
-                </span>
-              </div>
-            </div>
-            <div className={styles.postContent}>{post.content}</div>
+    <div className={styles.home}>
+      <div className={styles.postsList}>
+        <CreatePost />
+        {posts.data.map((post) => (
+          <Post post={post} key={`post-${post._id}`} />
+        ))}
+      </div>
 
-            <div className={styles.postActions}>
-              <div className={styles.postLike}>
-                <img
-                  src="https://cdn-icons-png.flaticon.com/512/126/126473.png"
-                  alt="likes-icon"
-                />
-                <span>{post.likes.length}</span>
-              </div>
-
-              <div className={styles.postCommentsIcon}>
-                <img
-                  src="https://cdn-icons-png.flaticon.com/512/1450/1450338.png"
-                  alt="comments-icon"
-                />
-                <span></span>
-              </div>
-            </div>
-            <div className={styles.postCommentBox}>
-              <input placeholder="Start typing a comment" />
-            </div>
-
-            <div className={styles.postCommentsList}>
-              {post.comments.map((comment) => {
-                return <Comment key={comment._id} comment={comment} />;
-              })}
-            </div>
-          </div>
-        </div>
-      ))}
+      {auth.user && <FriendsList />}
     </div>
   );
 };

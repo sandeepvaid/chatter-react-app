@@ -14,23 +14,23 @@ const UserProfile = () => {
     const auth = useAuth();
     const {userId} = useParams();
 
-    useEffect(()=>{
-        const getUserInfo=async ()=>{
-            const response = await fetchUserProfile(userId);
-            console.log("res",response)
-            if(response.success) {
-                console.log("User info",response);
-                setUser(response.data.user)
-            }else{
-                addToast(response.message, {
-                appearance: "error",
-                });
-                return Navigate("/");
-            }
-            setLoading(false);
+    useEffect(() => {
+      const getUserInfo = async () => {
+        const response = await fetchUserProfile(userId);
+        console.log("res", response);
+        if (response.success) {
+          console.log("User info", response);
+          setUser(response.data.user);
+        } else {
+          addToast(response.message, {
+            appearance: "error",
+          });
+          return Navigate("/");
         }
-        getUserInfo();
-    },[])
+        setLoading(false);
+      };
+      getUserInfo();
+    }, [userId]);
 
 const checkIfUserIsFriend=()=>{
     const friends = auth.user.friends;
