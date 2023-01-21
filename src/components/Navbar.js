@@ -1,9 +1,32 @@
 import styles from "../styles/navbar.module.css";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks";
+import { searchUsers } from "../api";
 const Navbar = () => {
   const auth = useAuth();
+  const [results, setResults] = useState([]);
+  const [searchText, setSearchText] = useState("");
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const response = await searchUsers(searchText);
+
+      if (response.success) {
+        setResults(response.data.users);
+      }
+    };
+
+    if (searchText.length > 2) {
+      fetchUsers();
+    } else {
+      setResults([]);
+    }
+  }, [searchText]);
+
+  const removeResults = () => {
+    setResults([]);
+  };
   return (
     <div className={styles.nav}>
       <div className={styles.leftDiv}>
@@ -14,7 +37,40 @@ const Navbar = () => {
           />
         </Link>
       </div>
+      <div className={styles.searchContainer}>
+        <img
+          className={styles.searchIcon}
+          src="https://image.flaticon.com/icons/svg/483/483356.svg"
+          alt=""
+        />
 
+        <input
+          placeholder="Search users"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+
+        {results.length > 0 && (
+          <div className={styles.searchResults}>
+            <ul>
+              {results.map((user) => (
+                <li
+                  className={styles.searchResultsRow}
+                  key={`user-${user._id}`}
+                >
+                  <Link to={`/user/${user._id}`} onClick={removeResults}>
+                    <img
+                      src="https://image.flaticon.com/icons/svg/2154/2154651.svg"
+                      alt=""
+                    />
+                    <span>{user.name}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
       <div className={styles.rightNav}>
         {auth.user && (
           <div className={styles.user}>
