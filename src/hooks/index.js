@@ -17,12 +17,15 @@ export const useAuth = () => {
 };
 export const useProvideAuth = () => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
       const userToken = getItemFromLocalStorage(LOCALSTORAGE_TOKEN_KEY);
-      const user = jwt(userToken);
+      if (userToken) {
+        const user = jwt(userToken);
+      }
+
       if (userToken) {
         const response = await getUserFriends();
         let friends = [];
@@ -34,6 +37,7 @@ export const useProvideAuth = () => {
           friends,
         });
       }
+
       setLoading(false);
     };
     getUser();

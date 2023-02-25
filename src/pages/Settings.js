@@ -5,6 +5,7 @@ import styles from "../styles/settings.module.css";
 const Settings = () => {
   const auth = useAuth();
   const [editMode, setEditMode] = useState(false);
+  console.log("Settings component", auth);
   const [name, setName] = useState(auth.user?.name ? auth.user.name : "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

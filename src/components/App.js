@@ -8,28 +8,23 @@ import Signup from "../pages/Signup";
 
 function PrivateRoute({ children }) {
   const auth = useAuth();
+  console.log("Auth", auth);
   return auth.user ? children : <Navigate to="/login" />;
 }
 function App() {
+  const auth = useAuth();
 
-   const auth = useAuth();
-  console.log("Home",auth)  
-
-  const Page404=()=>{
-    return (
-      <h1>404 Not found</h1>
-    )
-  }
+  const Page404 = () => {
+    return <h1>404 Not found</h1>;
+  };
 
   const About = () => {
     return <h1>About</h1>;
   };
 
-
-if(auth.loading){
-  console.log("Inside")
-  return <Loader/>;
-}
+  if (auth.loading) {
+    return <Loader />;
+  }
   return (
     <div className="App">
       <Router>
