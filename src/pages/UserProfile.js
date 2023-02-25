@@ -1,19 +1,109 @@
-import { useAuth } from "../hooks";
-import { useLocation } from "react-router-dom";
-import styles from "../styles/settings.module.css";
-const UserProfile = () => {
-  const auth = useAuth();
-  const location = useLocation();
-  console.log("location", location);
+import { useParams, useNavigate } from "react-router-dom";
+import { useToasts } from "react-toast-notifications";
 
-  const { user = {} } = location.state;
+import { Loader } from "../components";
+import styles from "../styles/settings.module.css";
+import { useAuth } from "../hooks";
+import { useEffect, useState } from "react";
+import { addFriend, fetchUserProfile, breakUp } from "../api";
+
+const UserProfile = () => {
+  const [user, setUser] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [requestInProgress, setRequestInProgress] = useState(false);
+  const { userId } = useParams();
+  const { addToast } = useToasts();
+  const navigate = useNavigate();
+  const auth = useAuth();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const response = await fetchUserProfile(userId);
+
+      if (response.success) {
+        setUser(response.data.user);
+      } else {
+        addToast(response.message, {
+          appearance: "error",
+        });
+        return navigate("/");
+      }
+
+      setLoading(false);
+    };
+
+    getUser();
+  }, [userId, navigate, addToast]);
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  const checkIfUserIsAFriend = () => {
+    const friends = auth.user.friends;
+
+    const friendIds = friends.map((friend) => friend.to_user._id);
+    const index = friendIds.indexOf(userId);
+
+    if (index !== -1) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const handleRemoveFriendClick = async () => {
+    setRequestInProgress(true);
+
+    const response = await breakUp(userId);
+    console.log("response", response);
+    if (response.success) {
+      const friendship = auth.user.friends.filter(
+        (friend) => friend.to_user._id === userId
+      );
+      console.log("frndship", friendship);
+
+      auth.updateUserFriends(false, friendship[0]);
+      addToast("Friend removed successfully", {
+        appearance: "success",
+      });
+    } else {
+      addToast(response.message, {
+        appearance: "error",
+      });
+    }
+
+    setRequestInProgress(false);
+  };
+
+  const handleAddFriendClick = async () => {
+    setRequestInProgress(true);
+
+    const response = await addFriend(userId);
+    console.log("response", response);
+    if (response.success) {
+      const { friendship } = response.data;
+      console.log("frndship", friendship);
+
+      auth.updateUserFriends(true, friendship);
+      addToast("Friend added successfully", {
+        appearance: "success",
+      });
+    } else {
+      addToast(response.message, {
+        appearance: "error",
+      });
+    }
+
+    setRequestInProgress(false);
+  };
 
   return (
     <div className={styles.settings}>
       <div className={styles.imgContainer}>
         <img
-          src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-          alt="dp"
+          src="https://image.flaticon.com/icons/svg/2154/2154651.svg"
+          alt=""
         />
       </div>
 
@@ -24,12 +114,26 @@ const UserProfile = () => {
 
       <div className={styles.field}>
         <div className={styles.fieldLabel}>Name</div>
+
         <div className={styles.fieldValue}>{user.name}</div>
       </div>
 
       <div className={styles.btnGrp}>
-        <button className={`button ${styles.saveBtn}`}>Add Friend </button>
-        <button className={`button ${styles.saveBtn}`}>Remove Friend </button>
+        {checkIfUserIsAFriend() ? (
+          <button
+            className={`button ${styles.saveBtn}`}
+            onClick={handleRemoveFriendClick}
+          >
+            {requestInProgress ? "Removing Friend" : "Remove Friend"}
+          </button>
+        ) : (
+          <button
+            className={`button ${styles.saveBtn}`}
+            onClick={handleAddFriendClick}
+          >
+            {requestInProgress ? "Adding Friend" : "Add Friend"}
+          </button>
+        )}
       </div>
     </div>
   );
